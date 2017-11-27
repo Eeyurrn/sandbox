@@ -1,12 +1,22 @@
 (ns sandbox.records
   (:require [honeysql.core :as sql]
             [honeysql.helpers :refer :all :as helpers]
-            [jdbc.core :as jdbc]))
+            [jdbc.core :as jdbc]
+            [clojure.java.jdbc :refer [create-table-ddl]]))
 
 (def db-spec
   {:classname   "org.sqlite.JDBC"
    :subprotocol "sqlite"
    :subname     "db/database.db"})
+
+
+(def create-user-table! (create-table-ddl :user
+                                         [[:id :int]
+                                          [:name :text]]
+                                         {:conditional? true}))
+
+(defn execute-query! [query]
+  (jdbc/execute (jdbc/connection db-spec) query))
 
 (defn where-id
   ( [id]
@@ -28,16 +38,16 @@
 (defn get-model [model-type-key model-id]
   (get-where model-type-key [[:= :id model-id]]))
 
-(defn create-model [model-type-key model-attrs-map]
+(defn create-model! [model-type-key model-attrs-map]
   (let [table model-type-key
         attrs model-attrs-map
         conn (jdbc/connection db-spec)
         sqlvec (-> (insert-into table)
                    (values [attrs])
                    sql/format)]
-    (jdbc/execute connection sqlvec)))
+    (jdbc/execute conn sqlvec)))
 
-(defn update-model [model-type-key model-id update-attrs]
+(defn update-model! [model-type-key model-id update-attrs]
   (let [table model-type-key
         id model-id
         attrs update-attrs
@@ -48,7 +58,7 @@
         conn (jdbc/connection db-spec)]
     (jdbc/execute conn sqlvec)))
 
-(defn delete-model [model-type-key model-id]
+(defn delete-model! [model-type-key model-id]
   (let [table model-type-key
         id model-id
         sqlvec (-> (delete-from table)
