@@ -59,14 +59,19 @@
   ( [map id]
     (helpers/where map [:= :id id])))
 
+(defn select-*
+  "docstring"
+  [model-type-key predicate-triples]
+  (let [trips predicate-triples]
+    (-> (apply where (or (empty? trips) [nil] trips))
+        (select :*)
+        (from model-type-key)
+        sql/format)))
+
+
 (defn get-where [model-type-key predicate-triples]
   "predicate triples a vector of vectors e.g [[:= :id model-id]]"
-  (let [table model-type-key
-        triples predicate-triples
-        sqlvec (-> (apply where triples)
-                   (select :*)
-                   (from table)
-                   sql/format)
+  (let [sqlvec (select-* model-type-key predicate-triples)
         conn (jdbc/connection db-spec)]
     (jdbc/fetch conn sqlvec)))
 
