@@ -80,7 +80,7 @@
         sqlvec (-> (insert-into table)
                    (values [attrs])
                    sql/format)]
-    (jdbc/execute connection sqlvec)))
+    (jdbc/execute conn sqlvec)))
 
 (defn update-model [model-type-key model-id update-attrs]
   (let [table model-type-key
