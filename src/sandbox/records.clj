@@ -10,10 +10,10 @@
    :subname     "db/database.db"})
 
 
-(def create-user-table! (create-table-ddl :user
-                                         [[:id :int]
-                                          [:name :text]]
-                                         {:conditional? true}))
+(def create-user-table (create-table-ddl :user
+                                       [[:id :int]
+                                        [:name :text]]
+                                       {:conditional? true}))
 
 (defn execute-query! [query]
   (jdbc/execute (jdbc/connection db-spec) query))
