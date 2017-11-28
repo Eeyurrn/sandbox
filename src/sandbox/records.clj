@@ -10,10 +10,17 @@
    :subname     "db/database.db"})
 
 
-(def create-user-table (create-table-ddl :user
-                                       [[:id :int]
-                                        [:name :text]]
+(def create-user-table (create-table-ddl :users
+                                       [[:id :int "PRIMARY KEY"]
+                                        [:name :text]
+                                        [:member :int]]
                                        {:conditional? true}))
+
+(def create-pet-table (create-table-ddl :pets
+                                        [[:id :int]
+                                         [:user_id :int]
+                                         [:name :text]
+                                         [:favourite_food :text]]))
 
 (defn execute-query! [query]
   (jdbc/execute (jdbc/connection db-spec) query))
