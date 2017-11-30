@@ -10,6 +10,10 @@
    :subname     "db/database.db"})
 
 
+
+(defn execute-query! [query]
+  (jdbc/execute (jdbc/connection db-spec) query))
+
 (def create-user-table (create-table-ddl :users
                                        [[:id :int "PRIMARY KEY"]
                                         [:name :text]
@@ -20,10 +24,8 @@
                                         [[:id :int]
                                          [:user_id :int]
                                          [:name :text]
-                                         [:favourite_food :text]]))
-
-(defn execute-query! [query]
-  (jdbc/execute (jdbc/connection db-spec) query))
+                                         [:favourite_food :text]]
+                                        {:conditional? true}))
 
 (defn where-id
   ( [id]
@@ -73,3 +75,28 @@
                    sql/format)
         conn (jdbc/connection db-spec)]
     (jdbc/execute conn sqlvec)))
+
+(def people [["Jim" 1 true]
+             ["Dwight" 2 true]
+             ["Michael" 3 false]
+             ["Pam" 4 false]
+             ["Kevin" 5 false]])
+
+(def pets [["Goldie" 1 1 "Bacon"]
+           ["Bucky" 2 2 "Liver"]
+           ["Rudolph" 3 3 "Apples"]
+           ["Bella" 4 1 "Bacon"]])
+
+(defn seed-user-table []
+  (execute-query! create-user-table)
+  (execute-query! "DELETE FROM users")
+  (doseq [person people]
+    (let [[name id member?] person]
+      (create-model! :users {:name name :id id :member (if member? 1 0)}))))
+
+(defn seed-pets-table []
+  (execute-query! create-pet-table)
+  (execute-query! "DELETE FROM pets")
+  (doseq [pet pets]
+    (let [[name id user-id favourite-food] pet]
+      (create-model! :pets {:name name :id id :user_id user-id :favourite_food favourite-food}))))
